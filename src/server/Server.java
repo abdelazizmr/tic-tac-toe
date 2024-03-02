@@ -28,9 +28,10 @@ public class Server {
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("Player connected: " + socket);
-                Player player = new Player(players.isEmpty() ? 'X' : 'O');
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                Player player = new Player(players.isEmpty() ? 'X' : 'O',out);
                 players.add(player);
-                PlayerHandler playerHandler = new PlayerHandler(socket,player);
+                PlayerHandler playerHandler = new PlayerHandler(socket,this,player);
                 playerHandler.start();
             }
         } catch (IOException e) {
@@ -41,6 +42,13 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+
+    public void updateGUI(String msg){
+        for (Player player : players) {
+            player.sendMessage(msg);
         }
     }
 

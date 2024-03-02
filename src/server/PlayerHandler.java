@@ -12,8 +12,10 @@ public class PlayerHandler extends Thread {
     private BufferedReader in;
     private Player player;
 
-    public PlayerHandler(Socket socket, Player p) {
+    private Server server;
 
+    public PlayerHandler(Socket socket,Server server, Player p) {
+        this.server = server;
         this.socket = socket;
         this.player = p;
         try {
@@ -31,7 +33,8 @@ public class PlayerHandler extends Thread {
             while (true) {
                 // Handle client input and game logic
                 String input = in.readLine();
-
+                System.out.println(input);
+                server.updateGUI(input);
                 // Process client input and update game state accordingly
             }
         } catch (IOException e) {
