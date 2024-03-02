@@ -8,14 +8,13 @@ import java.net.*;
 
 public class Client extends JFrame implements ActionListener {
     private JButton[][] buttons;
+    private JLabel playerLabel;
+    private JTextArea messageArea;
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
     private int boardSize;
     private char playerSymbol;
-
-    private JLabel playerLabel;
-    private JTextArea messageArea;
 
     public Client(String serverAddress, int port) {
         try {
@@ -23,20 +22,16 @@ public class Client extends JFrame implements ActionListener {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
 
-            // Receive board size and player's symbol from the server
             String[] info = in.readLine().split(",");
             boardSize = Integer.parseInt(info[0]);
             playerSymbol = info[1].charAt(0);
 
 
-
-            // Create the GUI
             initializeGUI();
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setSize(400, 400);
             setVisible(true);
 
-            // Create and start thread for receiving moves
             new Thread(new ServerListener()).start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -53,7 +48,6 @@ public class Client extends JFrame implements ActionListener {
                 boardPanel.add(buttons[i][j]);
             }
         }
-        // field and textArea
         playerLabel = new JLabel("Player => ( "+playerSymbol+" )");
         messageArea = new JTextArea("Your turn \n", 10, 10);
         messageArea.setEditable(false);
@@ -68,6 +62,7 @@ public class Client extends JFrame implements ActionListener {
         getContentPane().add(infoPanel, BorderLayout.NORTH);
         getContentPane().add(boardPanel, BorderLayout.CENTER);
         getContentPane().add(consolePanel,BorderLayout.SOUTH);
+
     }
 
     @Override
@@ -75,7 +70,6 @@ public class Client extends JFrame implements ActionListener {
         for (int i = 0; i < buttons.length; i++) {
             for (int j = 0; j < buttons[i].length; j++) {
                 if (e.getSource() == buttons[i][j] && buttons[i][j].getText().isEmpty()) {
-                    // Send player's move to the server
                     out.println(playerSymbol + "," + i + "," + j);
                     buttons[i][j].setText(String.valueOf(playerSymbol));
                 }
@@ -90,14 +84,36 @@ public class Client extends JFrame implements ActionListener {
                 while (true) {
                     String message = in.readLine();
                     if (message != null) {
-                        // Process the received message from the server
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                String[] parts = message.split(",");
-                                char symbol = parts[0].charAt(0);
-                                int row = Integer.parseInt(parts[1]);
-                                int col = Integer.parseInt(parts[2]);
-                                buttons[row][col].setText(String.valueOf(symbol));
+                                if (message.contains("won")) {
+                                    char winnerSymbol = message.charAt(0);
+                                    if (winnerSymbol == playerSymbol) {
+                                        JOptionPane.showMessageDialog(Client.this, "You won!");
+                                        System.exit(0);
+                                    } else {
+                                        JOptionPane.showMessageDialog(Client.this, "You lost!");
+                                        System.exit(0);
+                                    }
+                                } else if (message.contains("lost")) {
+                                    char loserSymbol = message.charAt(0);
+                                    if (loserSymbol == playerSymbol) {
+                                        JOptionPane.showMessageDialog(Client.this, "You lost!");
+                                        System.exit(0);
+                                    } else {
+                                        JOptionPane.showMessageDialog(Client.this, "You won!");
+                                        System.exit(0);
+                                    }
+                                }else if(message.contains("draw")){
+                                    JOptionPane.showMessageDialog(Client.this, "It is Draw !");
+                                    System.exit(0);
+                                } else {
+                                    String[] parts = message.split(",");
+                                    char symbol = parts[0].charAt(0);
+                                    int row = Integer.parseInt(parts[1]);
+                                    int col = Integer.parseInt(parts[2]);
+                                    buttons[row][col].setText(String.valueOf(symbol));
+                                }
                             }
                         });
                     }
@@ -107,6 +123,7 @@ public class Client extends JFrame implements ActionListener {
             }
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new Client("localhost", 9999));

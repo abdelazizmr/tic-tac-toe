@@ -10,15 +10,27 @@ public class Server {
     public int numberOfBoxes;
     private int winNumberOfBoxes;
     private char[][] board;
-    private boolean player1Turn = true; // Initially, it's player 1's turn
+    private boolean player1Turn = true;
 
     private ArrayList<Player> players = new ArrayList<>();
 
     public Server(int port, int numberOfBoxes, int winNumberOfBoxes) {
         this.port = port;
-        this.numberOfBoxes = numberOfBoxes;
-        this.winNumberOfBoxes = winNumberOfBoxes;
-        this.board = new char[numberOfBoxes][numberOfBoxes];
+        try {
+            if (winNumberOfBoxes > numberOfBoxes) {
+                throw new Exception("Number of boxes should be bigger than the winNumberOfBoxes");
+            }
+            if (numberOfBoxes > 10) {
+                throw new Exception("Max number of boxes allowed is 10");
+            }
+            this.numberOfBoxes = numberOfBoxes;
+            this.winNumberOfBoxes = winNumberOfBoxes;
+            this.board = new char[numberOfBoxes][numberOfBoxes];
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+        start();
     }
 
     public void start() {
@@ -32,7 +44,7 @@ public class Server {
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 Player player = new Player(players.isEmpty() ? 'X' : 'O',out);
                 players.add(player);
-                PlayerHandler playerHandler = new PlayerHandler(socket,this,player);
+                PlayerHandler playerHandler = new PlayerHandler(socket,this,player,board);
                 playerHandler.start();
             }
         } catch (IOException e) {
@@ -46,9 +58,8 @@ public class Server {
         }
     }
 
-    // Method to check for a win condition
-    private boolean checkWinCondition(char symbol) {
-        // Check rows for win
+    public boolean checkWinCondition(char symbol) {
+
         for (int i = 0; i < numberOfBoxes; i++) {
             for (int j = 0; j <= numberOfBoxes - winNumberOfBoxes; j++) {
                 boolean win = true;
@@ -64,7 +75,6 @@ public class Server {
             }
         }
 
-        // Check columns for win
         for (int j = 0; j < numberOfBoxes; j++) {
             for (int i = 0; i <= numberOfBoxes - winNumberOfBoxes; i++) {
                 boolean win = true;
@@ -80,7 +90,6 @@ public class Server {
             }
         }
 
-        // Check diagonals for win
         for (int i = 0; i <= numberOfBoxes - winNumberOfBoxes; i++) {
             for (int j = 0; j <= numberOfBoxes - winNumberOfBoxes; j++) {
                 boolean win = true;
@@ -96,7 +105,6 @@ public class Server {
             }
         }
 
-        // Check reverse diagonals for win
         for (int i = 0; i <= numberOfBoxes - winNumberOfBoxes; i++) {
             for (int j = winNumberOfBoxes - 1; j < numberOfBoxes; j++) {
                 boolean win = true;
@@ -115,12 +123,23 @@ public class Server {
         return false;
     }
 
-    // Method to switch turns between players
+    public boolean checkDrawCondition() {
+        for (int i = 0; i < numberOfBoxes; i++) {
+            for (int j = 0; j < numberOfBoxes; j++) {
+                if (board[i][j] == '\u0000') {
+                    // If any cell is empty, the game is not a draw
+                    return false;
+                }
+            }
+        }
+        // If all cells are filled and no player has won, it's a draw
+        return true;
+    }
+
     public void switchTurns() {
         player1Turn = !player1Turn;
     }
 
-    // Method to check if it's currently player 1's turn
     public boolean isPlayer1Turn() {
         return player1Turn;
     }
@@ -131,8 +150,17 @@ public class Server {
         }
     }
 
+    public void gameOver(char playerSymbol, boolean isWinner) {
+        String message;
+        if (isWinner) {
+            message = playerSymbol + "won";
+        } else {
+            message = playerSymbol + "lost";
+        }
+        updateGUI(message);
+    }
+
     public static void main(String[] args) {
-        Server server = new Server(9999, 6, 3); // Change parameters as needed
-        server.start();
+        new Server(9999, 3, 3);
     }
 }

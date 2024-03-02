@@ -12,10 +12,10 @@ public class PlayerHandler extends Thread {
     private BufferedReader in;
     private Player player;
     private Server server;
-    private String[][] board;
+    private char[][] board;
 
-    public PlayerHandler(Socket socket, Server server, Player p) {
-
+    public PlayerHandler(Socket socket, Server server, Player p, char[][] board) {
+        this.board = board;
         this.socket = socket;
         this.player = p;
         this.server = server;
@@ -33,19 +33,30 @@ public class PlayerHandler extends Thread {
 
 
             while (true) {
-                // Handle client input and game logic
+                if (in == null) {
+                    socket.close();
+                    return;
+                }
                 String input = in.readLine();
-                String symbol = input.split(",")[0];
-                int i = Integer.parseInt(input.split(",")[1]);
-                int j = Integer.parseInt(input.split(",")[2]);
-
-                board[i][j] = symbol;
-
 
                 System.out.println(input);
+
                 server.updateGUI(input);
-                server.switchTurns(); // Switch turns after receiving a move
-                // Process client input and update game state accordingly
+
+                char symbol = input.split(",")[0].charAt(0);
+                int i = Integer.parseInt(input.split(",")[1]);
+                int j = Integer.parseInt(input.split(",")[2]);
+                board[i][j] = symbol;
+                if(server.checkWinCondition(symbol)){
+                    notifyGameOver(symbol,true);
+                    return;
+                }
+                if(server.checkDrawCondition()){
+                    server.updateGUI("draw");
+                    return;
+                }
+                server.switchTurns();
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -56,5 +67,9 @@ public class PlayerHandler extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void notifyGameOver(char playerSymbol, boolean isWinner) {
+        server.gameOver(playerSymbol, isWinner);
     }
 }
