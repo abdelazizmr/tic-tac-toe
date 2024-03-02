@@ -7,9 +7,10 @@ import java.util.ArrayList;
 public class Server {
     private ServerSocket serverSocket;
     private int port;
-    private int numberOfBoxes;
+    public int numberOfBoxes;
     private int winNumberOfBoxes;
     private char[][] board;
+    private boolean player1Turn = true; // Initially, it's player 1's turn
 
     private ArrayList<Player> players = new ArrayList<>();
 
@@ -45,6 +46,15 @@ public class Server {
         }
     }
 
+    // Method to switch turns between players
+    public void switchTurns() {
+        player1Turn = !player1Turn;
+    }
+
+    // Method to check if it's currently player 1's turn
+    public boolean isPlayer1Turn() {
+        return player1Turn;
+    }
 
     public void updateGUI(String msg){
         for (Player player : players) {
@@ -52,12 +62,8 @@ public class Server {
         }
     }
 
-
-
-
-
     public static void main(String[] args) {
-        Server server = new Server(9999, 3, 3); // Change parameters as needed
+        Server server = new Server(9999, 6, 3); // Change parameters as needed
         server.start();
     }
 }

@@ -11,13 +11,12 @@ public class PlayerHandler extends Thread {
     private PrintWriter out;
     private BufferedReader in;
     private Player player;
-
     private Server server;
 
-    public PlayerHandler(Socket socket,Server server, Player p) {
-        this.server = server;
+    public PlayerHandler(Socket socket, Server server, Player p) {
         this.socket = socket;
         this.player = p;
+        this.server = server;
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -28,13 +27,15 @@ public class PlayerHandler extends Thread {
 
     public void run() {
         try {
-            out.println(player.getSymbol()); // Send player symbol to client
+            out.println(server.numberOfBoxes+","+player.getSymbol());
+
 
             while (true) {
                 // Handle client input and game logic
                 String input = in.readLine();
                 System.out.println(input);
                 server.updateGUI(input);
+                server.switchTurns(); // Switch turns after receiving a move
                 // Process client input and update game state accordingly
             }
         } catch (IOException e) {

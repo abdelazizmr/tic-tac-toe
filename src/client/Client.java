@@ -14,24 +14,35 @@ public class Client extends JFrame implements ActionListener {
     private int boardSize;
     private char playerSymbol;
 
-    public Client(String serverAddress, int port, int boardSize) {
-        this.boardSize = boardSize;
-        buttons = new JButton[boardSize][boardSize];
+    public Client(String serverAddress, int port) {
         try {
             socket = new Socket(serverAddress, port);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
 
-            // Receive player's symbol from the server
-            playerSymbol = in.readLine().charAt(0);
+            // Receive board size and player's symbol from the server
+            String[] info = in.readLine().split(",");
+            boardSize = Integer.parseInt(info[0]);
+            playerSymbol = info[1].charAt(0);
+
+            System.out.println("Board size: " + boardSize);
             System.out.println("Player symbol: " + playerSymbol);
 
-            // Create and start threads for receiving moves and updating GUI
+            // Create the GUI
+            initializeGUI();
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setSize(400, 400);
+            setVisible(true);
+
+            // Create and start thread for receiving moves
             new Thread(new ServerListener()).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    private void initializeGUI() {
+        buttons = new JButton[boardSize][boardSize]; // Adjust button array size
         JPanel boardPanel = new JPanel(new GridLayout(boardSize, boardSize));
         for (int i = 0; i < buttons.length; i++) {
             for (int j = 0; j < buttons[i].length; j++) {
@@ -40,11 +51,6 @@ public class Client extends JFrame implements ActionListener {
                 boardPanel.add(buttons[i][j]);
             }
         }
-
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 400);
-        setVisible(true);
-
         getContentPane().add(boardPanel, BorderLayout.CENTER);
     }
 
@@ -87,7 +93,7 @@ public class Client extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        new Client("localhost", 9999, 3); // Change parameters as needed
-        new Client("localhost", 9999, 3); // Change parameters as needed
+        SwingUtilities.invokeLater(() -> new Client("localhost", 9999));
+        SwingUtilities.invokeLater(() -> new Client("localhost", 9999));
     }
 }
