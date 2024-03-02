@@ -12,8 +12,10 @@ public class PlayerHandler extends Thread {
     private BufferedReader in;
     private Player player;
     private Server server;
+    private String[][] board;
 
     public PlayerHandler(Socket socket, Server server, Player p) {
+
         this.socket = socket;
         this.player = p;
         this.server = server;
@@ -33,6 +35,13 @@ public class PlayerHandler extends Thread {
             while (true) {
                 // Handle client input and game logic
                 String input = in.readLine();
+                String symbol = input.split(",")[0];
+                int i = Integer.parseInt(input.split(",")[1]);
+                int j = Integer.parseInt(input.split(",")[2]);
+
+                board[i][j] = symbol;
+
+
                 System.out.println(input);
                 server.updateGUI(input);
                 server.switchTurns(); // Switch turns after receiving a move

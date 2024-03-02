@@ -46,6 +46,75 @@ public class Server {
         }
     }
 
+    // Method to check for a win condition
+    private boolean checkWinCondition(char symbol) {
+        // Check rows for win
+        for (int i = 0; i < numberOfBoxes; i++) {
+            for (int j = 0; j <= numberOfBoxes - winNumberOfBoxes; j++) {
+                boolean win = true;
+                for (int k = 0; k < winNumberOfBoxes; k++) {
+                    if (board[i][j + k] != symbol) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win) {
+                    return true;
+                }
+            }
+        }
+
+        // Check columns for win
+        for (int j = 0; j < numberOfBoxes; j++) {
+            for (int i = 0; i <= numberOfBoxes - winNumberOfBoxes; i++) {
+                boolean win = true;
+                for (int k = 0; k < winNumberOfBoxes; k++) {
+                    if (board[i + k][j] != symbol) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win) {
+                    return true;
+                }
+            }
+        }
+
+        // Check diagonals for win
+        for (int i = 0; i <= numberOfBoxes - winNumberOfBoxes; i++) {
+            for (int j = 0; j <= numberOfBoxes - winNumberOfBoxes; j++) {
+                boolean win = true;
+                for (int k = 0; k < winNumberOfBoxes; k++) {
+                    if (board[i + k][j + k] != symbol) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win) {
+                    return true;
+                }
+            }
+        }
+
+        // Check reverse diagonals for win
+        for (int i = 0; i <= numberOfBoxes - winNumberOfBoxes; i++) {
+            for (int j = winNumberOfBoxes - 1; j < numberOfBoxes; j++) {
+                boolean win = true;
+                for (int k = 0; k < winNumberOfBoxes; k++) {
+                    if (board[i + k][j - k] != symbol) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     // Method to switch turns between players
     public void switchTurns() {
         player1Turn = !player1Turn;

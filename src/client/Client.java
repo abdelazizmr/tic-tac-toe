@@ -14,6 +14,9 @@ public class Client extends JFrame implements ActionListener {
     private int boardSize;
     private char playerSymbol;
 
+    private JLabel playerLabel;
+    private JTextArea messageArea;
+
     public Client(String serverAddress, int port) {
         try {
             socket = new Socket(serverAddress, port);
@@ -25,8 +28,7 @@ public class Client extends JFrame implements ActionListener {
             boardSize = Integer.parseInt(info[0]);
             playerSymbol = info[1].charAt(0);
 
-            System.out.println("Board size: " + boardSize);
-            System.out.println("Player symbol: " + playerSymbol);
+
 
             // Create the GUI
             initializeGUI();
@@ -51,7 +53,21 @@ public class Client extends JFrame implements ActionListener {
                 boardPanel.add(buttons[i][j]);
             }
         }
+        // field and textArea
+        playerLabel = new JLabel("Player => ( "+playerSymbol+" )");
+        messageArea = new JTextArea("Your turn \n", 10, 10);
+        messageArea.setEditable(false);
+
+        JPanel infoPanel = new JPanel(new GridLayout(1, 1));
+        infoPanel.add(playerLabel);
+
+        JScrollPane scrollPane = new JScrollPane(messageArea);
+        JPanel consolePanel = new JPanel(new GridLayout(1, 1));
+        consolePanel.add(scrollPane);
+
+        getContentPane().add(infoPanel, BorderLayout.NORTH);
         getContentPane().add(boardPanel, BorderLayout.CENTER);
+        getContentPane().add(consolePanel,BorderLayout.SOUTH);
     }
 
     @Override
